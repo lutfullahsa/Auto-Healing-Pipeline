@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: autoheal_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: autoheal_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d autoheal_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  sandbox-builder:
+    build:
+      context: .
+      dockerfile: app/sandbox/Dockerfile.sandbox
+    image: autoheal-sandbox:latest
+    command: ["echo", "Sandbox image built"]
+
+  api:
+    build: .
+    container_name: autoheal_api
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/autoheal_db
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+
+volumes:
+  postgres_data:

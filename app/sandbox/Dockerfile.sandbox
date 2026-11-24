@@ -1,0 +1,16 @@
+FROM python:3.11-slim
+
+# Install dependencies
+RUN pip install --no-cache-dir pandas numpy duckdb python-dateutil
+
+# Create non-root user
+RUN groupadd -r sandboxuser && useradd -r -g sandboxuser sandboxuser
+
+# Set working directory
+WORKDIR /workspace
+
+# Set permissions
+RUN chown -R sandboxuser:sandboxuser /workspace
+
+# Switch to non-root user
+USER sandboxuser

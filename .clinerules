@@ -1,0 +1,14 @@
+- **Mimari ve İzolasyon:** Sistem Multi-Tenant (çok kiracılı) mimaride çalışır. Tüm ana tablolarda `tenant_id` (UUID) zorunludur.
+- **Veritabanı Modelleri (`app/models/database_models.py`):** Sınıf ve tablo isimleri kesinlikle değiştirilmeyecektir: `Tenant`, `Pipeline`, `PipelineVersion`, `ExecutionLog`, `HealEvent`.
+- **Klasör Yapısı:**
+  - `database/` -> SQL şemaları ve migration dosyaları
+  - `app/models/` -> SQLAlchemy ORM modelleri
+  - `app/core/` -> PII (kişisel veri) maskeleme, şema farkı (diff) analizi ve hata yakalama motoru
+  - `app/sandbox/` -> Docker izole test çalıştırıcıları
+  - `app/agent/` -> LLM otonom yama üretici ajan kodları
+  - `tests/` -> Pytest birim ve entegrasyon testleri
+- **Kodlama ve Güvenlik Standartları:**
+  - Python 3.11+ tip belirteçleri (Type Hints) zorunludur.
+  - Bozuk satır örnekleri LLM'e gönderilmeden önce mutlaka PII maskeleme filtresinden geçirilmelidir.
+  - Üretilen Python yamaları Docker Sandbox doğrulamasından (`sandbox_verified=True`) geçmeden canlıya (`active_version_id`) alınamaz.
+  - Tüm log ve AI açıklamaları `preferred_language` ('TR' veya 'EN') alanına göre çift dil destekli üretilmelidir.
